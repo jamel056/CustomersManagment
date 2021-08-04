@@ -72,5 +72,21 @@ namespace CustomersManagment.Controllers
 
             return NoContent();
         }
+
+        [HttpPost]
+        [Route("AddField")]
+        public void AddField([FromQuery]string fieldName)
+        {
+            _contactService.AddField(fieldName);
+        }
+
+        [HttpPost]
+        [Route("Filter")]
+        public ActionResult Filter([FromBody]List<FilterRequest> request)
+        {
+            var response = _contactService.Filter(request);
+
+            return Ok(response);
+        }
     }
 }

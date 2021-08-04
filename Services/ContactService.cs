@@ -1,5 +1,6 @@
 ﻿using CustomersManagment.Models;
 using CustomersManagment.Requests;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace CustomersManagment.Services
         Contact Create(ContactRequest request);
         void Update(int id, ContactRequest request);
         void Remove(int id);
+        void AddField(string fieldName);
+        List<Contact> Filter(List<FilterRequest> request);
     }
 
     public class ContactService : IContactService
@@ -67,5 +70,25 @@ namespace CustomersManagment.Services
         public void Remove(int id) =>
             _contact.DeleteOne(contact => contact.Id == id);
 
+        public void AddField(string fieldName)
+        {
+            var update = Builders<Contact>.Update.Set(fieldName, "");
+            var filter = Builders<Contact>.Filter.Empty;
+            var options = new UpdateOptions { IsUpsert = true };
+            _contact.UpdateMany(filter, update, options);
+        }
+
+        public List<Contact> Filter(List<FilterRequest> request)
+        {
+            var dataQuery = new BsonDocument();
+            foreach (var item in request)
+            {
+                dataQuery.Add(item.Key, new BsonDocument { { "$eq", item.Value } });
+            }
+
+            var result = _contact.Find(dataQuery).ToList();
+
+            return result;
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CustomersManagment.Models;
 using CustomersManagment.Requests;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace CustomersManagment.Services
         Company Create(CompanyRequest request);
         void Update(int id, CompanyRequest request);
         void Remove(int id);
+        void AddField(string fieldName);
+        List<Company> Filter(List<FilterRequest> request);
     }
 
     public class CompanyService : ICompanyService
@@ -66,5 +69,25 @@ namespace CustomersManagment.Services
         public void Remove(int id) =>
             _company.DeleteOne(company => company.Id == id);
 
+        public void AddField(string fieldName)
+        {
+            var update = Builders<Company>.Update.Set(fieldName, "");
+            var filter = Builders<Company>.Filter.Empty;
+            var options = new UpdateOptions { IsUpsert = true };
+            _company.UpdateMany(filter, update, options);
+        }
+
+        public List<Company> Filter(List<FilterRequest> request)
+        {
+            var dataQuery = new BsonDocument();
+            foreach (var item in request)
+            {
+                dataQuery.Add(item.Key, new BsonDocument { { "$eq", item.Value } });
+            }
+
+            var result = _company.Find(dataQuery).ToList();
+
+            return result;
+        }
     }
 }

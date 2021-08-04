@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CustomersManagment.Models
 {
+    [BsonIgnoreExtraElements]
     public class Contact
     {
         [BsonId]
